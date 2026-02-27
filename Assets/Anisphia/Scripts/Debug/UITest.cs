@@ -3,10 +3,9 @@ using Anis.Input;
 
 public class UITest : MonoBehaviour
 {
+    [SerializeField] private AnisphiaButton[] _buttons;
 
     private InputManager _inputManager;
-
-
     int state_Decision = 0;
     int state_Cancel = 0;
     int state_Home = 0;
@@ -15,6 +14,8 @@ public class UITest : MonoBehaviour
     int state_any = 0;
 
     int wait = 0;
+
+    int currentButtonCunt = 0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,6 +25,14 @@ public class UITest : MonoBehaviour
         {
             _inputManager.SetEnableInputAction(EEnableInputType.UI);
         }
+
+        foreach (var button in _buttons)
+        {
+            button.Init(AnisphiaButton.EButtonState.Idle);
+        }
+
+        //1番目のボタンだけ選択中にする
+        _buttons[0].UpdateState(AnisphiaButton.EButtonState.Focus,true);
     }
 
     // Update is called once per frame
@@ -95,6 +104,9 @@ public class UITest : MonoBehaviour
                                 return;
                             }
 
+
+                            int preButtonNum = currentButtonCunt;
+
                             //押下したボタンの方向を取得
                             var dir = dirInter.GetDirectionalType();
                             if (dir == EUIDirectionalType.Up)
@@ -108,15 +120,30 @@ public class UITest : MonoBehaviour
                             else if (dir == EUIDirectionalType.Right)
                             {
                                 Debug.Log($"{inputType} : 右");
+                                currentButtonCunt--;
                             }
                             else if (dir == EUIDirectionalType.Left)
                             {
                                 Debug.Log($"{inputType} : 左");
+                                currentButtonCunt++;
                             }
                             else
                             {
                                 Debug.Log($"{inputType} : このログが表示されることはない　");
                             }
+
+                            if (currentButtonCunt < 0)
+                            {
+                                currentButtonCunt = _buttons.Length - 1;
+                            }
+                            if (currentButtonCunt > _buttons.Length - 1)
+                            {
+                                currentButtonCunt = 0;
+                            }
+
+                            _buttons[preButtonNum].UpdateState(AnisphiaButton.EButtonState.Idle, true);
+                            _buttons[currentButtonCunt].UpdateState(AnisphiaButton.EButtonState.Focus, true);
+
                         }
 
                         state++;
