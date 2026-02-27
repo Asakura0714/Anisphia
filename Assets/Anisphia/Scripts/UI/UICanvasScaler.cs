@@ -16,7 +16,7 @@ public class UICanvasScaler : MonoBehaviour
         if (_canvasScaler == null) return;
 
         _canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        _canvasScaler.referenceResolution = CommonInfo.SCREEN_SIZE;
+        _canvasScaler.referenceResolution = AnisphiaDefine.GameFramne.SCREEN_SIZE;
         _canvasScaler.screenMatchMode = ScreenMatchMode.MatchWidthOrHeight;
         _canvasScaler.matchWidthOrHeight = 0;
         _canvasScaler.referencePixelsPerUnit = 100;

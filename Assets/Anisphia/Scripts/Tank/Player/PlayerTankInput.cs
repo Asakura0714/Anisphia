@@ -25,31 +25,35 @@ public class PlayerTankInput : MonoBehaviour
     /// </summary>
     private float CursolMoveSpeed = 1000f;
 
-    private Transform _myTransform;
+    public Transform MyTransform { get; private set; }
     private Vector2 _cursorSize;
     private Vector3 _lastMousePosition;
 
     public void Setup()
     {
-        _myTransform = _virtualMouseInput.cursorTransform;
+        MyTransform = _virtualMouseInput.cursorTransform;
         var rectTrans = _virtualMouseInput.cursorTransform;
 
-       
         _cursorSize = new Vector2(rectTrans.rect.width / 2f, rectTrans.rect.height / 2f);
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Confined;
     }
 
 
     public void MoveMouceCursol(Vector2 inputAxis)
     {
+        //UI操作中は処理をしない
+        if(AnisphiaMainSystem.Instance.InputManager.IsCurrentInputActionUI)
+        {
+            return;
+        }
+
+        //現在使用中なのがマウスの時
         if (AnisphiaMainSystem.Instance.InputManager.UseCurrentMouse)
         {
             // 前フレームからの「移動量（Delta）」を計算
             Vector2 mouseDelta = Input.mousePosition - _lastMousePosition;
 
             //移動量に感度反映
-            _myTransform.position += (Vector3)(mouseDelta * _mauseSensitivity);
+            MyTransform.position += (Vector3)(mouseDelta * _mauseSensitivity);
 
             //次フレームのために現在のマウス位置を記録（※Warp前を記録）
             _lastMousePosition = Input.mousePosition;
@@ -57,22 +61,24 @@ public class PlayerTankInput : MonoBehaviour
         else
         {
             //移動量の計算
-            _myTransform.position += GetCursolSpeed(inputAxis);
+            MyTransform.position += GetCursolSpeed(inputAxis);
         }
 
         //画面範囲外をチェック
         if (CheckScreenEdge())
         {
+#if !UNITY_EDITOR
             //画面内に収める
             SetScreenLimitPosition();
+#endif
         }
 
         if (AnisphiaMainSystem.Instance.InputManager.UseCurrentMouse)
         {
-            Mouse.current.WarpCursorPosition(_myTransform.position);
+            Mouse.current.WarpCursorPosition(MyTransform.position);
 
             // Warpした後の位置を記録しておくことで、Warpによる移動をDeltaとして拾わないようにする
-            _lastMousePosition = _myTransform.position;
+            _lastMousePosition = MyTransform.position;
         }
     }
 
@@ -98,17 +104,22 @@ public class PlayerTankInput : MonoBehaviour
         float halfHeight = _cursorSize.y;
 
         //値の丸め込み
-        float clampedX = Mathf.Clamp(_myTransform.position.x, halfWidth, Screen.width - halfWidth);
-        float clampedY = Mathf.Clamp(_myTransform.position.y, halfHeight, Screen.height - halfHeight);
+        float clampedX = Mathf.Clamp(MyTransform.position.x, halfWidth, Screen.width - halfWidth);
+        float clampedY = Mathf.Clamp(MyTransform.position.y, halfHeight, Screen.height - halfHeight);
 
-        _myTransform.position = new Vector3(clampedX, clampedY, 0f);
+        MyTransform.position = new Vector3(clampedX, clampedY, 0f);
     }
 
     private bool CheckScreenEdge()
     {
-        float x = _myTransform.position.x;
-        float y = _myTransform.position.y;
+        float x = MyTransform.position.x;
+        float y = MyTransform.position.y;
         return x <= _cursorSize.x || x >= Screen.width - _cursorSize.x ||
                y <= _cursorSize.y || y >= Screen.height - _cursorSize.y;
+    }
+
+    public Vector3 GetMauseCursolWorldPos()
+    {
+        return Camera.main.ScreenToWorldPoint(MyTransform.position);
     }
 }

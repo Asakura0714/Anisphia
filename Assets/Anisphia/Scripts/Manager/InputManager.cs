@@ -1,11 +1,7 @@
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.ShaderGraph;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
 
 namespace Anis.Input
 {
@@ -25,6 +21,25 @@ namespace Anis.Input
         UI
     }
 
+    public enum EUIInputType
+    {
+        Decision,   //決定
+        Cancel,     //キャンセル
+        Home,       //ホーム
+        Any,        //どこでも
+        Navigate,   //選択の移動
+        Tab,        //ページめくり
+    }
+
+    public enum EUIDirectionalType
+    {
+        None,
+        Up,
+        Down,
+        Right,
+        Left
+    }
+
     public class InputManager : ManagerBase
     {
         private InputControl _control;
@@ -35,9 +50,15 @@ namespace Anis.Input
         private Action<InputAction.CallbackContext> _playerMineAction;
         private Action<InputAction.CallbackContext> _playerPauseAction;
 
-        private float _deadzone = 0.15f;
-
         public bool UseCurrentMouse { get; private set; }
+
+        public EEnableInputType CurrentInpuType { get; private set; }
+
+        public InputControl.UIActions GetUI => _control.UI;
+
+        public bool IsCurrentInputActionUI => AnisphiaMainSystem.Instance.InputManager.CurrentInpuType == EEnableInputType.UI;
+
+        private Dictionary<EUIInputType, UIInputModuleBase> _inputDictionary = new();
 
         public override void Setup()
         {
@@ -48,6 +69,29 @@ namespace Anis.Input
             _control.Player.Pause.performed += (content => _playerPauseAction?.Invoke(content));
 
             InputSystem.onActionChange += OnActionChange;
+
+            var actionUi = _control.UI;
+
+            UIInputModuleBase decision = new InputDecisionModule(actionUi.Decision);
+            UIInputModuleBase cancel = new InputCancelModule(actionUi.Cancel);
+            UIInputModuleBase home = new InputHomeModule(actionUi.Home);
+            UIInputModuleBase any = new InputAnyModule(actionUi.Any);
+            UIInputModuleBase navi = new InputNavigateModule(actionUi.Navigate);
+            UIInputModuleBase tab = new InputTabModule(actionUi.Tab);
+
+            _inputDictionary.Add(EUIInputType.Decision, decision);
+            _inputDictionary.Add(EUIInputType.Cancel, cancel);
+            _inputDictionary.Add(EUIInputType.Home, home);
+            _inputDictionary.Add(EUIInputType.Any, any);
+            _inputDictionary.Add(EUIInputType.Navigate, navi);
+            _inputDictionary.Add(EUIInputType.Tab, tab);
+
+
+
+#if !UNITY_EDITOR
+            //zACursor.visible = false;
+            //Cursor.lockState = CursorLockMode.Confined;
+#endif
         }
         private void OnActionChange(object obj, InputActionChange change)
         {
@@ -108,6 +152,8 @@ namespace Anis.Input
         /// <param name="enable"></param>
         public void SetEnableInputAction(EEnableInputType type)
         {
+            CurrentInpuType = type;
+
             switch (type)
             {
                 case EEnableInputType.Player:
@@ -174,10 +220,75 @@ namespace Anis.Input
         /// <returns></returns>
         private bool IsOverDeadZone(Vector2 axis)
         {
-            bool isOverX = Mathf.Abs(axis.x) > _deadzone;
-            bool isOverY = Mathf.Abs(axis.y) > _deadzone;
+            bool isOverX = Mathf.Abs(axis.x) > AnisphiaDefine.Input.DEADZONE;
+            bool isOverY = Mathf.Abs(axis.y) > AnisphiaDefine.Input.DEADZONE;
 
             return isOverX || isOverY;
+        }
+
+
+        //決定を「押された瞬間」
+        public bool IsGetPressedInput(EUIInputType inputType)
+        {
+            //InpuActionを取得
+            _inputDictionary.TryGetValue(inputType, out var pressedInput);
+            if (pressedInput != null)
+            {
+                return pressedInput.IsPressed();
+            }
+
+            Debug.LogError("InputActionの取得に失敗しました");
+
+            return false;
+        }
+
+        //決定を「離した瞬間」
+        public bool IsGetReleasedInput(EUIInputType inputType)
+        {
+            //InpuActionを取得
+            _inputDictionary.TryGetValue(inputType, out var pressedInput);
+            if (pressedInput != null)
+            {
+                return pressedInput.IsReleased();
+            }
+
+            Debug.LogError("InputActionの取得に失敗しました");
+
+            return false;
+        }
+
+        //決定を「押下中」
+        public bool IsGetHoldInput(EUIInputType inputType)
+        {
+            //InpuActionを取得
+            _inputDictionary.TryGetValue(inputType, out var pressedInput);
+            if (pressedInput != null)
+            {
+                return pressedInput.IsHold();
+            }
+
+            Debug.LogError("InputActionの取得に失敗しました");
+
+            return false;
+        }
+
+        /// <summary>
+        /// 決定とキャンセルを入れ替える
+        /// </summary>
+        public void SwapDecisionAndCancel()
+        {
+            var DecisionInput = _inputDictionary[EUIInputType.Decision];
+            var CancelInput = _inputDictionary[EUIInputType.Cancel];
+
+            _inputDictionary[EUIInputType.Decision] = CancelInput;
+            _inputDictionary[EUIInputType.Cancel] = DecisionInput;
+        }
+
+        public IDirectionalInput GetDirectionalInterfece(EUIInputType inputType)
+        {
+            _inputDictionary.TryGetValue(inputType, out var inputAction);
+
+            return inputAction as IDirectionalInput;
         }
     }
 }

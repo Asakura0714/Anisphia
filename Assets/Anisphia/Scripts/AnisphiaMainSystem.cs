@@ -20,8 +20,6 @@ public class AnisphiaMainSystem : MonoBehaviour
 
     public InputManager InputManager { get; private set; }
 
-    public SettingManager SettingManager { get; private set; }
-
     public SoundManager SoundManager { get; private set; }
 
     public SceneManager SceneManager { get; private set; }
@@ -44,7 +42,6 @@ public class AnisphiaMainSystem : MonoBehaviour
         InputManager = CreateManager<InputManager>() as InputManager;
         SaveDataManager = CreateManager<SaveDataManager>()as SaveDataManager;
         SoundManager = CreateManager<SoundManager>() as SoundManager;
-        SettingManager = CreateManager<SettingManager>() as SettingManager;
         SceneManager = CreateManager<SceneManager>() as SceneManager;
         CommonUIManager = CreateManager<CommonUIManager>() as CommonUIManager;
 
@@ -87,7 +84,6 @@ public class AnisphiaMainSystem : MonoBehaviour
         InputManager.OnDelete();
         SaveDataManager.OnDelete();
         SoundManager.OnDelete();
-        SettingManager.OnDelete();
         SceneManager.OnDelete();
         CommonUIManager.OnDelete();
     }

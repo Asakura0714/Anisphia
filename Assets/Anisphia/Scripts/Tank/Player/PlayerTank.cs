@@ -8,8 +8,9 @@ public class PlayerTank : TankBase
 {
 
     [SerializeField] private PlayerTankInput _playerInput = default;
-
+    [SerializeField] private TankTurretBase _tankTurret = default;
     [SerializeField] private TextMeshProUGUI _textMeshProUGUI;
+
 
     public PlayerTankInput PlayerInput => _playerInput;
 
@@ -125,6 +126,8 @@ public class PlayerTank : TankBase
     protected override void OnFire()
     {
         base.OnFire();
+
+        _tankTurret.OnFire();
         //Debug.Log("Player Fire");
     }
     protected override void OnMine()
@@ -154,16 +157,22 @@ public class PlayerTank : TankBase
         return ((EMoveDirection)dirIndex,angle);
     }
 
+    private int GetRaycastMask => 1 << 6;
 
     public void Update()
     {
-        if(AnisphiaMainSystem.Instance.InputManager.UseCurrentMouse)
+        int distance = 1000;
+
+        Ray ray = Camera.main.ScreenPointToRay(_playerInput.MyTransform.position);
+        RaycastHit hit;
+        // Rayを飛ばして当たり判定をチェック
+        if (Physics.Raycast(ray, out hit, distance, GetRaycastMask))
         {
-            _textMeshProUGUI.SetText("マウス/キーボードで操作中");
-        }
-        else
-        {
-            _textMeshProUGUI.SetText("コントローラーで操作中");
+            var worldPos = new Vector3(hit.point.x, 0f, hit.point.z);
+
+
+            _tankTurret.SetLookAtCursol(worldPos);
         }
     }
+
 }
