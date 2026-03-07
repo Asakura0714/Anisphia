@@ -24,6 +24,9 @@ namespace Anis.Scene
             { ESceneType.MainGame,"MainGame"}
         };
 
+        private UniTaskCompletionSource<SceneBase> _sceneInitReadyTask;
+        public SceneBase CurrentSceneBase { get; private set; }
+
         /// <summary>
         /// シーン名を取得する
         /// </summary>
@@ -35,6 +38,9 @@ namespace Anis.Scene
     
         public async UniTask LoadSceneAync(ESceneType sceneType)
         {
+            //前回のシーン情報が残ってるので毎回生成する
+            _sceneInitReadyTask = new UniTaskCompletionSource<SceneBase>();
+
             CurrentSceneType = sceneType;
 
             string sceneName = GetSceneName(sceneType);
@@ -60,12 +66,16 @@ namespace Anis.Scene
             
         }
 
-        private UniTaskCompletionSource<SceneBase> _sceneInitReadyTask = new();
-        public SceneBase CurrentSceneBase { get; private set; }
-
+        /// <summary>
+        /// 自分のインスタンスを登録
+        /// </summary>
+        /// <param name="scene"></param>
         public void RegisterSceneBase(SceneBase scene)
         {
+            //自分自身を保存
             CurrentSceneBase = scene;
+
+            //通知を飛ばす
             _sceneInitReadyTask?.TrySetResult(scene);
         }
     }
