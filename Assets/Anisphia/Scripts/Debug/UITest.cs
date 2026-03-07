@@ -13,8 +13,6 @@ public class UITest : MonoBehaviour
     int state_Navi = 0;
     int state_any = 0;
 
-    int wait = 0;
-
     int currentButtonCunt = 0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

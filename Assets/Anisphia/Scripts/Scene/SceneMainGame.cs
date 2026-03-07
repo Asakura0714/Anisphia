@@ -1,4 +1,5 @@
 using Anis.Input;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -8,12 +9,17 @@ public class SceneMainGame : SceneBase
     [SerializeField] private MainGamePresenter _uiPresenter = default;
     [SerializeField] private PlayerTank _playerTank = default;
 
-    public override void Awake()
+    //public override void Awake()
+    //{
+    //    InitScene();
+    //}
+
+    protected override void OnAwake()
     {
-        InitScene();
+        //継承側では処理なし
     }
 
-    public override void InitScene()
+    public override async UniTask InitAsync()
     {
         _playerTank.Setup();
 
@@ -34,6 +40,8 @@ public class SceneMainGame : SceneBase
 
         //UI初期化
         _uiPresenter.Init();
+
+        await UniTask.CompletedTask;
     }
 
     /// <summary>
@@ -104,7 +112,7 @@ public class SceneMainGame : SceneBase
         //ゲームを停止
         SetGameTimeScale(false);
 
-        AnisphiaMainSystem.Instance.SceneManager.LoadScene(Anis.Scene.SceneManager.ESceneType.MainGame);
+        AnisphiaMainSystem.Instance.SceneManager.LoadSceneAync(Anis.Scene.SceneManager.ESceneType.MainGame).Forget();
     }
 
     /// <summary>
@@ -121,7 +129,7 @@ public class SceneMainGame : SceneBase
         SetGameTimeScale(false);
 
         //ステージ選択へ
-        AnisphiaMainSystem.Instance.SceneManager.LoadScene(Anis.Scene.SceneManager.ESceneType.StageSelect);
+        AnisphiaMainSystem.Instance.SceneManager.LoadSceneAync(Anis.Scene.SceneManager.ESceneType.StageSelect).Forget();
     }
 
     /// <summary>
@@ -133,5 +141,4 @@ public class SceneMainGame : SceneBase
     }
 
     #endregion
-
 }

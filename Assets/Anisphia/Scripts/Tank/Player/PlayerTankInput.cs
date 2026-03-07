@@ -17,9 +17,6 @@ public class PlayerTankInput : MonoBehaviour
     [SerializeField]
     private float _mauseSensitivity = 1f;
 
-    [SerializeField]
-    bool isMouce = false;
-
     /// <summary>
     /// ‚±‚±‚Í•ÏX‚µ‚È‚¢
     /// </summary>

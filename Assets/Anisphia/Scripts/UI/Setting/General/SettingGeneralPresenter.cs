@@ -4,7 +4,7 @@ namespace Anis.UI.Setting
 {
     public class SettingGeneralPresenter : MonoBehaviour
     {
-        [SerializeField] SettingGeneralView _view = default;
+        //[SerializeField] SettingGeneralView _view = default;
 
         private SettingSensitivityModel _sensitivityModel;
 

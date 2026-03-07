@@ -1,16 +1,21 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class SceneBase : MonoBehaviour
+public abstract class SceneBase : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-
-    public virtual void Awake()
+    private void Awake()
     {
+        AnisphiaMainSystem.Instance.SceneManager.RegisterSceneBase(this);
 
+        OnAwake();
     }
 
-    public virtual void InitScene()
-    {
+    //Œp³‚ğ‹­§‚³‚¹‚é
+    protected abstract void OnAwake();
 
+    //ƒV[ƒ“Å‰‚Ì‰Šú‰»
+    public virtual async UniTask InitAsync()
+    {
+        await UniTask.CompletedTask;
     }
 }

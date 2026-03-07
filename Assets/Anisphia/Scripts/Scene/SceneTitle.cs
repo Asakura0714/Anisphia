@@ -1,29 +1,34 @@
+using Cysharp.Threading.Tasks;
+using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class SceneTitle : SceneBase
 {
     [SerializeField] private TitlePresenter _presenter = default;
 
-    public override void Awake()
+    protected override void OnAwake()
     {
-        InitScene();
+        //継承側では処理なし
     }
 
-    public override void InitScene()
+
+    public override async UniTask InitAsync()
     {
         _presenter.InitPresenter();
 
         _presenter.OnStageSelectAction = OnClickStageSelect;
         _presenter.OnSettingAction = OnClickSettting;
         _presenter.OnGameExitAction = OnClickGameExit;
+
+        await UniTask.CompletedTask;
     }
 
     private async void OnClickStageSelect()
     {
-        Debug.Log("ステージ選択");
         //AnisphiaMainSystem.Instance.SceneManager.LoadScene(Anis.Scene.SceneManager.ESceneType.StageSelect);
 
-        await AnisphiaMainSystem.Instance.SceneManager.ChangeSceneAync(Anis.Scene.SceneManager.ESceneType.StageSelect);
+        await AnisphiaMainSystem.Instance.SceneManager.LoadSceneAync(Anis.Scene.SceneManager.ESceneType.StageSelect);
 
         Debug.Log("ステージ読み込み完了");
     }

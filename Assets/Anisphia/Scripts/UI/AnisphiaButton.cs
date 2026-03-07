@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class AnisphiaButton : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
+public class AnisphiaButton : MonoBehaviour
 {
     public enum EButtonState
     {
@@ -92,18 +92,5 @@ public class AnisphiaButton : MonoBehaviour, IPointerClickHandler, IPointerDownH
     {
         _text.text = inString;
         _text.color = color;
-    }
-    public void OnPointerClick(PointerEventData eventData)
-    {
-
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-    }
-
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        
     }
 }

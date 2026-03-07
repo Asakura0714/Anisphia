@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class StageSelectPresenter : MonoBehaviour
@@ -20,6 +21,6 @@ public class StageSelectPresenter : MonoBehaviour
         Debug.Log("ステージを選択");
 
         //MainGameへ移動
-        AnisphiaMainSystem.Instance.SceneManager.LoadScene(Anis.Scene.SceneManager.ESceneType.MainGame);
+        AnisphiaMainSystem.Instance.SceneManager.LoadSceneAync(Anis.Scene.SceneManager.ESceneType.MainGame).Forget();
     }
 }

@@ -1,6 +1,8 @@
 using Anis.Input;
 using Anis.Scene;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -24,7 +26,7 @@ public class AnisphiaMainSystem : MonoBehaviour
 
     public SceneManager SceneManager { get; private set; }
 
-    public CommonUIManager CommonUIManager { get; private set; }
+    public UIManager UIManager { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void AppEntryPoint()
@@ -34,22 +36,31 @@ public class AnisphiaMainSystem : MonoBehaviour
 
         DontDestroyOnLoad(go);
         Instance = system;
-        Instance.Setup();
+        Instance.Setup().Forget();
     }
 
-    private void Setup()
+    private async UniTask Setup()
     {
         InputManager = CreateManager<InputManager>() as InputManager;
         SaveDataManager = CreateManager<SaveDataManager>()as SaveDataManager;
         SoundManager = CreateManager<SoundManager>() as SoundManager;
         SceneManager = CreateManager<SceneManager>() as SceneManager;
-        CommonUIManager = CreateManager<CommonUIManager>() as CommonUIManager;
+        UIManager = CreateManager<UIManager>() as UIManager;
 
         //アプリ終了時にコール
         Application.quitting += AppQuitting;
 
         //神、準備完了
         AppInitialized = true;
+
+        //現在開きたいシーンのAwakeを待機
+        await UniTask.Yield();
+
+        //最初のシーンが見つかるまで待機
+        await UniTask.WaitUntil(() => SceneManager.CurrentSceneBase != null);
+
+        //最初に開くシーンの初期化
+        await SceneManager.CurrentSceneBase.InitAsync();
     }
 
     /// <summary>
@@ -85,7 +96,7 @@ public class AnisphiaMainSystem : MonoBehaviour
         SaveDataManager.OnDelete();
         SoundManager.OnDelete();
         SceneManager.OnDelete();
-        CommonUIManager.OnDelete();
+        UIManager.OnDelete();
     }
 
     public void AppQuit()
@@ -100,5 +111,6 @@ public class AnisphiaMainSystem : MonoBehaviour
     private void Update()
     {
         InputManager.OnUpdate();
+        UIManager.OnUpdate();
     }
 }
